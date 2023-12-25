@@ -32,7 +32,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         commandScheduler.run();
-        Logger.recordOutput("Poses/Components/TurretPose", new Pose3d());
     }
 
     @Override
