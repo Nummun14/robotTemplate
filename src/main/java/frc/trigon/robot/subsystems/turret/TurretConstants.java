@@ -26,13 +26,12 @@ public class TurretConstants {
             TURRET_ROOT_LENGTH = 1,
             TURRET_ROOT_ANGLE = 0;
     private static final double MECHANISM_LINE_WIDTH = 10;
-    @AutoLogOutput(key = "Turret/TurretMechanism")
     static final Mechanism2d TURRET_MECHANISM = new Mechanism2d(TURRET_MECHANISM_WIDTH, TURRET_MECHANISM_HEIGHT);
     static final MechanismRoot2d
-            TURRET_ROOT = TURRET_MECHANISM.getRoot("Z_TURRET_ROOT", TURRET_ROOT_X, TURRET_ROOT_Y),
-            TARGET_ANGLE_ROOT = TURRET_MECHANISM.getRoot("TARGET_ANGLE_ROOT", TURRET_ROOT_X, TURRET_ROOT_Y);
+            TURRET_ROOT = TURRET_MECHANISM.getRoot("ZTurretRoot", TURRET_ROOT_X, TURRET_ROOT_Y),
+            TARGET_ANGLE_ROOT = TURRET_MECHANISM.getRoot("TargetAngleRoot", TURRET_ROOT_X, TURRET_ROOT_Y);
     static final MechanismLigament2d
-            TURRET_LIGAMENT = TURRET_ROOT.append(new MechanismLigament2d("TURRET_LIGAMENT", TURRET_ROOT_LENGTH, TURRET_ROOT_ANGLE, MECHANISM_LINE_WIDTH, new Color8Bit(Color.kBlue))),
+            TURRET_LIGAMENT = TURRET_ROOT.append(new MechanismLigament2d("TurretLigament", TURRET_ROOT_LENGTH, TURRET_ROOT_ANGLE, MECHANISM_LINE_WIDTH, new Color8Bit(Color.kBlue))),
             TARGET_ANGLE_LIGAMENT = TARGET_ANGLE_ROOT.append(new MechanismLigament2d("TargetAngleLigament", TURRET_ROOT_LENGTH, TURRET_ROOT_ANGLE, MECHANISM_LINE_WIDTH, new Color8Bit(Color.kGray)));
 
 }

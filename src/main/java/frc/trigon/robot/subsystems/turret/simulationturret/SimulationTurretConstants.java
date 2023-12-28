@@ -26,8 +26,8 @@ public class SimulationTurretConstants extends TurretIO {
             MAX_MOTOR_VELOCITY, MAX_MOTOR_ACCELERATION
     );
     private static final double
-            P = 1100,
-            I = 0,
+            P = 1175,
+            I = 1780,
             D = 0;
     static final ProfiledPIDController PROFILED_PID_CONTROLLER = new ProfiledPIDController(P, I, D, CONSTRAINTS);
 

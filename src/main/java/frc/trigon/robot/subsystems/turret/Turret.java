@@ -4,10 +4,11 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.subsystems.AbstractSubsystem;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends SubsystemBase {
+public class Turret extends AbstractSubsystem {
     private final static Turret INSTANCE = new Turret();
     private final TurretIO turretIO = TurretIO.generateIO();
     private final TurretInputsAutoLogged turretInputs = new TurretInputsAutoLogged();
@@ -17,6 +18,15 @@ public class Turret extends SubsystemBase {
     }
 
     private Turret() {
+    }
+
+    @Override
+    public void setBrake(boolean brake) {
+    }
+
+    @Override
+    public void stop() {
+        turretIO.stop();
     }
 
     @Override
@@ -33,11 +43,11 @@ public class Turret extends SubsystemBase {
     }
 
     private Rotation2d calculateTargetAngle() {
-        Pose2d currentPosition = RobotContainer.POSE_ESTIMATOR.getCurrentPose().toBlueAlliancePose();
+        Pose2d currentPosition = RobotContainer.POSE_ESTIMATOR.getCurrentPose().toCurrentAlliancePose();
         Translation2d difference = TurretConstants.HUB_POSITION.minus(currentPosition.getTranslation());
         double theta = Math.atan2(difference.getY(), difference.getX());
-        double targetAngle = theta - currentPosition.getRotation().getRadians();
-        return Rotation2d.fromRadians(targetAngle);
+        double targetAngleRadians = theta - currentPosition.getRotation().getRadians();
+        return Rotation2d.fromRadians(targetAngleRadians);
     }
 
     private Rotation2d limitAngle(Rotation2d targetAngle) {

@@ -16,6 +16,7 @@ public class KablamaTurretIO extends TurretIO {
         inputs.motorPositionDegrees = getPosition().getDegrees();
         inputs.motorVelocityDegreesPerSecond = getVelocityDegreesPerSecond();
         inputs.motorVoltage = motor.getMotorVoltage().refresh().getValue();
+        inputs.profiledTargetPositionDegrees = getProfiledTargetPosition().getDegrees();
     }
 
     @Override
@@ -34,5 +35,9 @@ public class KablamaTurretIO extends TurretIO {
 
     private double getVelocityDegreesPerSecond() {
         return Units.rotationsToDegrees(KablamaTurretConstants.TURRET_VELOCITY_SIGNAL.refresh().getValue());
+    }
+
+    private Rotation2d getProfiledTargetPosition() {
+        return Rotation2d.fromRotations(motor.getClosedLoopReference().refresh().getValue());
     }
 }

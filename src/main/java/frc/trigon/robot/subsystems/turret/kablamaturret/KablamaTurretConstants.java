@@ -27,7 +27,6 @@ public class KablamaTurretConstants {
             I = 0,
             D = 0,
             KA = 0,
-            KG = 1,
             KS = 0,
             KV = 0;
     private static final CANcoder ENCODER = new CANcoder(ENCODER_ID);
@@ -53,7 +52,6 @@ public class KablamaTurretConstants {
         config.Slot0.kI = I;
         config.Slot0.kD = D;
         config.Slot0.kA = KA;
-        config.Slot0.kG = KG;
         config.Slot0.kS = KS;
         config.Slot0.kV = KV;
         
