@@ -7,12 +7,11 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.trigon.robot.constants.RobotConstants;
 import frc.trigon.robot.subsystems.turret.TurretIO;
 import frc.trigon.robot.subsystems.turret.TurretInputsAutoLogged;
-import org.littletonrobotics.junction.Logger;
 
 public class SimulationTurretIO extends TurretIO {
     private final DCMotorSim motor = SimulationTurretConstants.MOTOR;
     private double voltage = 0;
-    
+
     @Override
     protected void updateInputs(TurretInputsAutoLogged inputs) {
         motor.update(RobotConstants.PERIODIC_TIME_SECONDS);
@@ -20,7 +19,7 @@ public class SimulationTurretIO extends TurretIO {
         inputs.motorPositionDegrees = Units.radiansToDegrees(motor.getAngularPositionRad());
         inputs.motorVelocityDegreesPerSecond = Units.radiansToDegrees(motor.getAngularVelocityRadPerSec());
         inputs.motorVoltage = voltage;
-        inputs.profiledTargetPositionDegrees =  getProfiledTargetPositionDegrees();
+        inputs.profiledTargetPositionDegrees = getProfiledTargetPositionDegrees();
     }
 
     @Override

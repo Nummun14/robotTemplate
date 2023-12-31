@@ -1,63 +1,56 @@
 package frc.trigon.robot.motorsimulation;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.trigon.robot.utilities.Conversions;
 
-public class MotorSimulation {
-    private final DCMotorSim motorSim;
-    private ProfiledPIDController pidController;
+public abstract class MotorSimulation {
+    private PIDController pidController;
+    private ProfiledPIDController profiledPIDController;
     private SimpleMotorFeedforward feedforward;
     private double voltage = 0;
 
-    public MotorSimulation(DCMotor motor, double gearRatio, double momentOfInertia) {
-        motorSim = new DCMotorSim(motor, gearRatio, momentOfInertia);
-    }
-
     public void applyConfiguration(MotorSimulationConfiguration config) {
-        this.pidController = config.getProfiledPIDController();
-        this.feedforward = config.getFeedforward();
+        this.profiledPIDController = new ProfiledPIDController(config.kP, config.kI, config.kD, config.constraints);
+        this.pidController = new PIDController(config.kP, config.kI, config.kD);
+        this.feedforward = new SimpleMotorFeedforward(config.kS, config.kV, config.kA);
     }
 
     public void stop() {
-        voltageRequest(0);
+        setInputVoltage(0);
     }
 
-    public void voltageRequest(double voltage) {
+    public void voltageRequest(VoltageOut VoltageRequest) {
+        this.voltage = VoltageRequest.Output;
+        setInputVoltage(VoltageRequest.withOutput(voltage).Output);
+    }
+
+    public void positionVoltageRequest(PositionVoltage positionVoltage) {
+        double voltage = pidController.calculate(positionVoltage.Position);
         this.voltage = voltage;
-        motorSim.setInputVoltage(voltage);
+        setInputVoltage(voltage);
     }
 
-    public void positionVoltageRequest(double targetPosition) {
-        double pidOutput = pidController.calculate(getPositionRevolutions(), targetPosition);
-        voltageRequest(pidOutput);
-    }
-
-    public void motionMagicRequest(double targetPosition) {
-        double pidOutput = pidController.calculate(getPositionRevolutions(), targetPosition);
+    public void motionMagicRequest(MotionMagicVoltage MotionMagicRequest) {
+        double pidOutput = profiledPIDController.calculate(getPositionRevolutions(), MotionMagicRequest.Position);
         double feedforwardOutput = feedforward.calculate(getVelocityRevolutionsPerSecond());
         double output = pidOutput + feedforwardOutput;
-        voltageRequest(output);
+        this.voltage = output;
+        voltageRequest(new VoltageOut(output));
     }
 
     public double getVoltage() {
         return voltage;
     }
 
-    public double getPositionRevolutions() {
-        double positionDegrees = Units.radiansToDegrees(motorSim.getAngularPositionRad());
-        return Conversions.degreesToRevolutions(positionDegrees);
-    }
+    abstract double getPositionRevolutions();
 
-    public double getVelocityRevolutionsPerSecond() {
-        double velocityDegreesPerSecond = Units.radiansToDegrees(motorSim.getAngularVelocityRadPerSec());
-        return Conversions.degreesToRevolutions(velocityDegreesPerSecond);
-    }
+    abstract double getVelocityRevolutionsPerSecond();
 
-    public double getCurrent() {
-        return motorSim.getCurrentDrawAmps();
-    }
+    abstract double getCurrent();
+
+    abstract void setInputVoltage(double voltage);
 }
