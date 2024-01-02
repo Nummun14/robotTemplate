@@ -3,34 +3,31 @@ package frc.trigon.robot.motorsimulation;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.trigon.robot.utilities.Conversions;
 
 public class SimpleMotorSimulation extends MotorSimulation {
-    private final DCMotorSim motorSim;
+    private final DCMotorSim motorSimulation;
 
     public SimpleMotorSimulation(DCMotor motor, double gearRatio, double momentOfInertia) {
-        motorSim = new DCMotorSim(motor, gearRatio, momentOfInertia);
+        motorSimulation = new DCMotorSim(motor, gearRatio, momentOfInertia);
     }
 
     @Override
     double getPositionRevolutions() {
-        double positionDegrees = Units.radiansToDegrees(motorSim.getAngularPositionRad());
-        return Conversions.degreesToRevolutions(positionDegrees);
+        return Units.radiansToRotations(motorSimulation.getAngularPositionRad());
     }
 
     @Override
     double getVelocityRevolutionsPerSecond() {
-        double velocityDegreesPerSecond = Units.radiansToDegrees(motorSim.getAngularVelocityRadPerSec());
-        return Conversions.degreesToRevolutions(velocityDegreesPerSecond);
+        return Units.radiansToRotations(motorSimulation.getAngularVelocityRadPerSec());
     }
 
     @Override
     double getCurrent() {
-        return motorSim.getCurrentDrawAmps();
+        return motorSimulation.getCurrentDrawAmps();
     }
 
     @Override
     void setInputVoltage(double voltage) {
-        motorSim.setInputVoltage(voltage);
+        motorSimulation.setInputVoltage(voltage);
     }
 }

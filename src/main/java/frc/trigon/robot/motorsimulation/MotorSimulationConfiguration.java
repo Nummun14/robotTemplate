@@ -12,8 +12,8 @@ public class MotorSimulationConfiguration {
             kG,
             kV,
             kA;
-    public TrapezoidProfile.Constraints constraints;
-
-    public MotorSimulationConfiguration() {
-    }
+    public double voltageCompensationSaturation;
+    public double
+            maxVelocity,
+            maxAcceleration;
 }
