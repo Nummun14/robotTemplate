@@ -1,19 +1,21 @@
 package frc.trigon.robot.motorsimulation;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-
 public class MotorSimulationConfiguration {
+    public double conversionFactor = 1;
     public double
-            kP,
-            kI,
-            kD;
+            kP = 1 * conversionFactor,
+            kI = 0 * conversionFactor,
+            kD = 0 * conversionFactor;
     public double
-            kS,
-            kG,
-            kV,
-            kA;
-    public double voltageCompensationSaturation;
+            kS = 0 * conversionFactor,
+            kG = 9.8 * conversionFactor,
+            kV = 0 * conversionFactor,
+            kA = 0 * conversionFactor;
+    public double voltageCompensationSaturation = 12 * conversionFactor;
     public double
-            maxVelocity,
-            maxAcceleration;
+            maxVelocity = 100 * conversionFactor,
+            maxAcceleration = 80 * conversionFactor;
+    public double
+            minimumContinuousOutput = 6 * conversionFactor,
+            maximumContinuousOutput = 12 * conversionFactor;
 }

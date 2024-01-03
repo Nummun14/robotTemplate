@@ -7,22 +7,31 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.trigon.robot.utilities.Conversions;
 
 public abstract class MotorSimulation {
     private PIDController pidController;
     private ProfiledPIDController profiledPIDController;
-    private SimpleMotorFeedforward feedforward;
     private double voltageCompensationSaturation;
+    private double
+            kS,
+            kG,
+            kV,
+            kA;
     private double voltage = 0;
 
     public void applyConfiguration(MotorSimulationConfiguration config) {
         profiledPIDController = new ProfiledPIDController(config.kP, config.kI, config.kD, new TrapezoidProfile.Constraints(config.maxVelocity, config.maxAcceleration));
         pidController = new PIDController(config.kP, config.kI, config.kD);
-        feedforward = new SimpleMotorFeedforward(config.kS, config.kV, config.kA);
         voltageCompensationSaturation = config.voltageCompensationSaturation;
+
+        this.kS = config.kS;
+        this.kG = config.kG;
+        this.kV = config.kV;
+        this.kA = config.kA;
+
+        pidController.enableContinuousInput(config.minimumContinuousOutput, config.maximumContinuousOutput);
     }
 
     public void stop() {
@@ -47,7 +56,7 @@ public abstract class MotorSimulation {
 
     public void SetControl(MotionMagicVoltage MotionMagicRequest) {
         double pidOutput = profiledPIDController.calculate(getPositionRevolutions(), MotionMagicRequest.Position);
-        double feedforwardOutput = feedforward.calculate(getVelocityRevolutionsPerSecond());
+        double feedforwardOutput = calculateFeedforward(kS, kG, kV, kA);
         double output = pidOutput + feedforwardOutput;
         setVoltage(output);
     }
@@ -61,6 +70,8 @@ public abstract class MotorSimulation {
     public double getVoltage() {
         return voltage;
     }
+
+    abstract double calculateFeedforward(double ks, double kg, double kv, double ka);
 
     abstract double getPositionRevolutions();
 
