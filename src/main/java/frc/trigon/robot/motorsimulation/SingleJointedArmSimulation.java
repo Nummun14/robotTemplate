@@ -1,6 +1,7 @@
 package frc.trigon.robot.motorsimulation;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -13,9 +14,11 @@ public class SingleJointedArmSimulation extends MotorSimulation {
     }
 
     @Override
-    double calculateFeedforward(double ks, double kg, double kv, double ka) {
-        ArmFeedforward feedforward = new ArmFeedforward(ks, kg, kv, ka);
-        return feedforward.calculate(Units.rotationsToRadians(getPositionRevolutions()), Units.rotationsToRadians(getVelocityRevolutionsPerSecond()));
+    double calculateFeedforward(double ks, double kg, double kv, double ka, double targetVelocity, double targetPosition) {
+        return ks * Math.signum(Units.rotationsToRadians(targetPosition))
+                + kg * Math.cos(Units.rotationsToRadians(targetPosition)) +
+                kv * Units.rotationsToRadians(targetVelocity) +
+                ka * 0;
     }
 
     @Override

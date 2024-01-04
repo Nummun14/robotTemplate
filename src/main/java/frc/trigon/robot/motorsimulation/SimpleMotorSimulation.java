@@ -13,9 +13,8 @@ public class SimpleMotorSimulation extends MotorSimulation {
     }
 
     @Override
-    double calculateFeedforward(double ks, double kg, double kv, double ka) {
-        SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(ks, kv, ka);
-        return feedforward.calculate(getVelocityRevolutionsPerSecond());
+    double calculateFeedforward(double ks, double kg, double kv, double ka, double targetVelocity, double targetPosition) {
+        return ks * Math.signum(targetVelocity) + kv * targetVelocity + ka * 0;
     }
 
     @Override
