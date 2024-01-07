@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A wrapper class for the WPIlib default simulation classes, that'll act similarly to how the TalonFX motor controller works.
+ * A wrapper class for the WPILib default simulation classes, that'll act similarly to how the TalonFX motor controller works.
  */
 public abstract class MotorSimulation {
     private static final List<MotorSimulation> REGISTERED_SIMULATIONS = new ArrayList<>();
@@ -77,6 +77,10 @@ public abstract class MotorSimulation {
     public void setControl(DutyCycleOut dutyCycleRequest) {
         double voltage = Conversions.compensatedPowerToVoltage(dutyCycleRequest.Output, config.voltageCompensationSaturation);
         setVoltage(voltage);
+    }
+
+    public double getProfiledTargetPositionRevolutions() {
+        return profiledPIDController.getGoal().position;
     }
 
     public double getVoltage() {

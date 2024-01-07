@@ -1,55 +1,36 @@
 package frc.trigon.robot.subsystems.turret.simulationturret;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.trigon.robot.constants.RobotConstants;
+import frc.trigon.robot.motorsimulation.SimpleMotorSimulation;
 import frc.trigon.robot.subsystems.turret.TurretIO;
 import frc.trigon.robot.subsystems.turret.TurretInputsAutoLogged;
 
 public class SimulationTurretIO extends TurretIO {
-    private final DCMotorSim motor = SimulationTurretConstants.MOTOR;
+    private final SimpleMotorSimulation motor = SimulationTurretConstants.MOTOR;
+    private final MotionMagicVoltage positionVoltageRequest = new MotionMagicVoltage(0);
     private double voltage = 0;
 
     @Override
     protected void updateInputs(TurretInputsAutoLogged inputs) {
-        motor.update(RobotConstants.PERIODIC_TIME_SECONDS);
 
-        inputs.motorPositionDegrees = Units.radiansToDegrees(motor.getAngularPositionRad());
-        inputs.motorVelocityDegreesPerSecond = Units.radiansToDegrees(motor.getAngularVelocityRadPerSec());
+        inputs.motorPositionDegrees = Units.rotationsToDegrees(motor.getPositionRevolutions());
+        inputs.motorVelocityDegreesPerSecond = Units.rotationsToDegrees(motor.getVelocityRevolutionsPerSecond());
         inputs.motorVoltage = voltage;
-        inputs.profiledTargetPositionDegrees = getProfiledTargetPositionDegrees();
+        inputs.profiledTargetPositionDegrees = Units.rotationsToDegrees(motor.getProfiledTargetPositionRevolutions());
     }
 
     @Override
     protected void setTargetAngle(Rotation2d targetAngle) {
-        setTargetVoltage(calculateTargetAngle(targetAngle));
+        motor.setControl(positionVoltageRequest.withPosition(targetAngle.getRotations()));
     }
 
     @Override
     protected void stop() {
-        setTargetVoltage(0);
-    }
-
-    private void setTargetVoltage(double voltage) {
-        double compensatedVoltage = MathUtil.clamp(
-                voltage,
-                -SimulationTurretConstants.VOLTAGE_COMPENSATION_SATURATION,
-                SimulationTurretConstants.VOLTAGE_COMPENSATION_SATURATION
-        );
-        this.voltage = compensatedVoltage;
-        motor.setInputVoltage(compensatedVoltage);
-    }
-
-    private double calculateTargetAngle(Rotation2d targetAngle) {
-        double currentPositionRotations = Units.radiansToRotations(motor.getAngularPositionRad());
-        double pidOutput = SimulationTurretConstants.PROFILED_PID_CONTROLLER.calculate(currentPositionRotations, targetAngle.getRotations());
-        double feedforwardOutput = SimulationTurretConstants.FEEDFORWARD.calculate(SimulationTurretConstants.PROFILED_PID_CONTROLLER.getGoal().velocity);
-        return pidOutput + feedforwardOutput;
-    }
-
-    private double getProfiledTargetPositionDegrees() {
-        return Units.rotationsToDegrees(SimulationTurretConstants.PROFILED_PID_CONTROLLER.getGoal().position);
+        motor.stop();
     }
 }

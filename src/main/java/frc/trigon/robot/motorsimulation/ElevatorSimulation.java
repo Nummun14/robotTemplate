@@ -23,17 +23,17 @@ public class ElevatorSimulation extends MotorSimulation {
     }
 
     @Override
-    double getPositionRevolutions() {
+    public double getPositionRevolutions() {
         return Conversions.distanceToRevolutions(elevatorSimulation.getPositionMeters(), diameterMeters);
     }
 
     @Override
-    double getVelocityRevolutionsPerSecond() {
+    public double getVelocityRevolutionsPerSecond() {
         return Conversions.distanceToRevolutions(elevatorSimulation.getVelocityMetersPerSecond(), diameterMeters);
     }
 
     @Override
-    double getCurrent() {
+    public double getCurrent() {
         return elevatorSimulation.getCurrentDrawAmps();
     }
 
