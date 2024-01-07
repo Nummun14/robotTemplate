@@ -21,7 +21,7 @@ import java.util.List;
  */
 public abstract class MotorSimulation {
     private static final List<MotorSimulation> REGISTERED_SIMULATIONS = new ArrayList<>();
-    
+
     static {
         new Notifier(MotorSimulation::updateRegisteredSimulations).startPeriodic(RobotConstants.PERIODIC_TIME_SECONDS);
     }
@@ -125,5 +125,6 @@ public abstract class MotorSimulation {
     abstract double getCurrent();
 
     abstract void setInputVoltage(double voltage);
+    
     abstract void updateMotor();
 }
