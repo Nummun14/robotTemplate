@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import frc.trigon.robot.constants.RobotConstants;
 import frc.trigon.robot.utilities.Conversions;
 
@@ -26,8 +27,8 @@ public abstract class MotorSimulation {
         new Notifier(MotorSimulation::updateRegisteredSimulations).startPeriodic(RobotConstants.PERIODIC_TIME_SECONDS);
     }
 
-    private PositionVoltage positionVoltageRequest;
-    private MotionMagicVoltage motionMagicRequest;
+    private PositionVoltage positionVoltageRequest = null;
+    private MotionMagicVoltage motionMagicRequest = null;
     private PIDController pidController;
     private ProfiledPIDController profiledPIDController;
     private double voltageCompensationSaturation;
@@ -56,14 +57,20 @@ public abstract class MotorSimulation {
 
     public void setControl(PositionVoltage positionVoltageRequest) {
         this.positionVoltageRequest = positionVoltageRequest;
-        double voltage = pidController.calculate(getPositionRevolutions() * config.conversionFactor, positionVoltageRequest.Position);
+        motionMagicRequest = null;
+        double voltage = pidController.calculate(getPosition(), positionVoltageRequest.Position);
         setVoltage(voltage);
     }
 
     public void setControl(MotionMagicVoltage motionMagicRequest) {
         this.motionMagicRequest = motionMagicRequest;
-        double pidOutput = profiledPIDController.calculate(getPositionRevolutions() * config.conversionFactor, motionMagicRequest.Position);
-        double feedforwardOutput = calculateFeedforward(config.feedForwardConfigs, Units.rotationsToRadians(motionMagicRequest.Position / config.conversionFactor), profiledPIDController.getGoal().velocity);
+        positionVoltageRequest = null;
+        double pidOutput = profiledPIDController.calculate(getPosition(), motionMagicRequest.Position);
+        double feedforwardOutput = calculateFeedforward(
+                config.feedForwardConfigs,
+                Units.rotationsToRadians(motionMagicRequest.Position / config.conversionFactor),
+                profiledPIDController.getGoal().velocity
+        );
         double output = pidOutput + feedforwardOutput;
         setVoltage(output);
     }
@@ -85,6 +92,16 @@ public abstract class MotorSimulation {
         return getVelocityRevolutionsPerSecond() * config.conversionFactor;
     }
 
+    private static void updateRegisteredSimulations() {
+        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS) {
+            motorSimulation.updateMotor();
+            if (motorSimulation.motionMagicRequest != null)
+                motorSimulation.setControl(motorSimulation.motionMagicRequest);
+            else if (motorSimulation.positionVoltageRequest != null)
+                motorSimulation.setControl(motorSimulation.positionVoltageRequest);
+        }
+    }
+
     private void setVoltage(double voltage) {
         double compensatedVoltage = MathUtil.clamp(voltage, -voltageCompensationSaturation, voltageCompensationSaturation);
         this.voltage = compensatedVoltage;
@@ -98,14 +115,6 @@ public abstract class MotorSimulation {
         } else {
             pidController.disableContinuousInput();
             profiledPIDController.disableContinuousInput();
-        }
-    }
-
-    private static void updateRegisteredSimulations() {
-        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS) {
-            motorSimulation.setControl(motorSimulation.positionVoltageRequest);
-            motorSimulation.setControl(motorSimulation.motionMagicRequest);
-            motorSimulation.updateMotor();
         }
     }
 

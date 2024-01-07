@@ -16,7 +16,10 @@ public class ElevatorSimulation extends MotorSimulation {
 
     @Override
     double calculateFeedforward(MotorSimulationConfiguration.FeedForwardConfigs feedForwardConfiguration, double targetPositionRadians, double targetVelocity) {
-        return feedForwardConfiguration.kS * Math.signum(targetVelocity) + feedForwardConfiguration.kG + feedForwardConfiguration.kV * targetVelocity + feedForwardConfiguration.kA * 0;
+        return feedForwardConfiguration.kS * Math.signum(targetVelocity)
+                + feedForwardConfiguration.kG
+                + feedForwardConfiguration.kV * targetVelocity
+                + feedForwardConfiguration.kA * 0;
     }
 
     @Override
