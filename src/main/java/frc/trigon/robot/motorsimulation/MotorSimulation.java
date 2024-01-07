@@ -31,23 +31,34 @@ public abstract class MotorSimulation {
     private MotionMagicVoltage motionMagicRequest = null;
     private PIDController pidController;
     private ProfiledPIDController profiledPIDController;
-    private double voltageCompensationSaturation;
-    private MotorSimulationConfiguration config;
+    private MotorSimulationConfiguration config = new MotorSimulationConfiguration();
     private double voltage = 0;
 
-    public MotorSimulation() {
+    protected MotorSimulation() {
         REGISTERED_SIMULATIONS.add(this);
     }
+
+    private static void updateRegisteredSimulations() {
+        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS) {
+            motorSimulation.updateMotor();
+            if (motorSimulation.motionMagicRequest != null)
+                motorSimulation.setControl(motorSimulation.motionMagicRequest);
+            else if (motorSimulation.positionVoltageRequest != null)
+                motorSimulation.setControl(motorSimulation.positionVoltageRequest);
+        }
+    }
+
 
     public void applyConfiguration(MotorSimulationConfiguration config) {
         profiledPIDController = new ProfiledPIDController(config.pidConfigs.kP, config.pidConfigs.kI, config.pidConfigs.kD, new TrapezoidProfile.Constraints(config.motionMagicConfigs.maxVelocity, config.motionMagicConfigs.maxAcceleration));
         pidController = new PIDController(config.pidConfigs.kP, config.pidConfigs.kI, config.pidConfigs.kD);
-        voltageCompensationSaturation = config.voltageCompensationSaturation;
         this.config = config;
         enablePIDContinuousInput(config.pidConfigs.enableContinuousInput);
     }
 
     public void stop() {
+        positionVoltageRequest = null;
+        motionMagicRequest = null;
         setVoltage(0);
     }
 
@@ -65,18 +76,12 @@ public abstract class MotorSimulation {
     public void setControl(MotionMagicVoltage motionMagicRequest) {
         this.motionMagicRequest = motionMagicRequest;
         positionVoltageRequest = null;
-        double pidOutput = profiledPIDController.calculate(getPosition(), motionMagicRequest.Position);
-        double feedforwardOutput = calculateFeedforward(
-                config.feedForwardConfigs,
-                Units.rotationsToRadians(motionMagicRequest.Position / config.conversionFactor),
-                profiledPIDController.getGoal().velocity
-        );
-        double output = pidOutput + feedforwardOutput;
+        double output = calculateMotionMagicOutput(motionMagicRequest);
         setVoltage(output);
     }
 
     public void setControl(DutyCycleOut dutyCycleRequest) {
-        double voltage = Conversions.compensatedPowerToVoltage(dutyCycleRequest.Output, voltageCompensationSaturation);
+        double voltage = Conversions.compensatedPowerToVoltage(dutyCycleRequest.Output, config.voltageCompensationSaturation);
         setVoltage(voltage);
     }
 
@@ -92,26 +97,26 @@ public abstract class MotorSimulation {
         return getVelocityRevolutionsPerSecond() * config.conversionFactor;
     }
 
-    private static void updateRegisteredSimulations() {
-        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS) {
-            motorSimulation.updateMotor();
-            if (motorSimulation.motionMagicRequest != null)
-                motorSimulation.setControl(motorSimulation.motionMagicRequest);
-            else if (motorSimulation.positionVoltageRequest != null)
-                motorSimulation.setControl(motorSimulation.positionVoltageRequest);
-        }
+    private double calculateMotionMagicOutput(MotionMagicVoltage motionMagicRequest) {
+        double pidOutput = profiledPIDController.calculate(getPosition(), motionMagicRequest.Position);
+        double feedforwardOutput = calculateFeedforward(
+                config.feedForwardConfigs,
+                Units.rotationsToRadians(motionMagicRequest.Position / config.conversionFactor),
+                profiledPIDController.getGoal().velocity
+        );
+        return pidOutput + feedforwardOutput;
     }
 
     private void setVoltage(double voltage) {
-        double compensatedVoltage = MathUtil.clamp(voltage, -voltageCompensationSaturation, voltageCompensationSaturation);
+        double compensatedVoltage = MathUtil.clamp(voltage, -config.voltageCompensationSaturation, config.voltageCompensationSaturation);
         this.voltage = compensatedVoltage;
         setInputVoltage(compensatedVoltage);
     }
 
     private void enablePIDContinuousInput(boolean enableContinuousInput) {
         if (enableContinuousInput) {
-            pidController.enableContinuousInput(-(0.5 * config.conversionFactor), 0.5 * config.conversionFactor);
-            profiledPIDController.enableContinuousInput(-(0.5 * config.conversionFactor), 0.5 * config.conversionFactor);
+            pidController.enableContinuousInput(-0.5 * config.conversionFactor, 0.5 * config.conversionFactor);
+            profiledPIDController.enableContinuousInput(-0.5 * config.conversionFactor, 0.5 * config.conversionFactor);
         } else {
             pidController.disableContinuousInput();
             profiledPIDController.disableContinuousInput();
@@ -119,11 +124,11 @@ public abstract class MotorSimulation {
     }
 
     /**
-     * Calculates the feedforward
+     * Calculates the feedforward.
      *
-     * @param feedForwardConfiguration The feedforward configuration
-     * @param targetPositionRadians    The target position in radians
-     * @param targetVelocity           The target velocity
+     * @param feedForwardConfiguration the feedforward configuration
+     * @param targetPositionRadians    the target position in radians
+     * @param targetVelocity           the target velocity in the conversion factor
      * @return The calculated feedforward voltage
      */
     abstract double calculateFeedforward(MotorSimulationConfiguration.FeedForwardConfigs feedForwardConfiguration, double targetPositionRadians, double targetVelocity);
