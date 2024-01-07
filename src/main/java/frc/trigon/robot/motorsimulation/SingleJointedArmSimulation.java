@@ -1,10 +1,9 @@
 package frc.trigon.robot.motorsimulation;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.trigon.robot.constants.RobotConstants;
 
 public class SingleJointedArmSimulation extends MotorSimulation {
     private final SingleJointedArmSim armSimulation;
@@ -14,11 +13,11 @@ public class SingleJointedArmSimulation extends MotorSimulation {
     }
 
     @Override
-    double calculateFeedforward(double ks, double kg, double kv, double ka, double targetVelocity, double targetPosition) {
-        return ks * Math.signum(Units.rotationsToRadians(targetPosition))
-                + kg * Math.cos(Units.rotationsToRadians(targetPosition)) +
-                kv * Units.rotationsToRadians(targetVelocity) +
-                ka * 0;
+    double calculateFeedforward(MotorSimulationConfiguration.FeedForwardConfigs feedForwardConfiguration, double targetPositionRadians, double targetVelocity) {
+        return feedForwardConfiguration.kS * Math.signum(targetPositionRadians)
+                + feedForwardConfiguration.kG * Math.cos(targetPositionRadians)
+                + feedForwardConfiguration.kV * (targetVelocity)
+                + feedForwardConfiguration.kA * 0;
     }
 
     @Override
@@ -39,5 +38,10 @@ public class SingleJointedArmSimulation extends MotorSimulation {
     @Override
     void setInputVoltage(double voltage) {
         armSimulation.setInputVoltage(voltage);
+    }
+
+    @Override
+    void updateMotor() {
+        armSimulation.update(RobotConstants.PERIODIC_TIME_SECONDS);
     }
 }

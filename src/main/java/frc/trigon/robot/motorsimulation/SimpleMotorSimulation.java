@@ -1,9 +1,9 @@
 package frc.trigon.robot.motorsimulation;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.trigon.robot.constants.RobotConstants;
 
 public class SimpleMotorSimulation extends MotorSimulation {
     private final DCMotorSim motorSimulation;
@@ -13,8 +13,8 @@ public class SimpleMotorSimulation extends MotorSimulation {
     }
 
     @Override
-    double calculateFeedforward(double ks, double kg, double kv, double ka, double targetVelocity, double targetPosition) {
-        return ks * Math.signum(targetVelocity) + kv * targetVelocity + ka * 0;
+    double calculateFeedforward(MotorSimulationConfiguration.FeedForwardConfigs feedForwardConfiguration, double targetPositionRadians, double targetVelocity) {
+        return feedForwardConfiguration.kS * Math.signum(targetVelocity) + feedForwardConfiguration.kV * targetVelocity + feedForwardConfiguration.kA * 0;
     }
 
     @Override
@@ -35,5 +35,10 @@ public class SimpleMotorSimulation extends MotorSimulation {
     @Override
     void setInputVoltage(double voltage) {
         motorSimulation.setInputVoltage(voltage);
+    }
+
+    @Override
+    void updateMotor() {
+        motorSimulation.update(RobotConstants.PERIODIC_TIME_SECONDS);
     }
 }

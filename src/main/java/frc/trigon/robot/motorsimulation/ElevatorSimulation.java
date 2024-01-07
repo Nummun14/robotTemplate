@@ -1,8 +1,8 @@
 package frc.trigon.robot.motorsimulation;
 
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import frc.trigon.robot.constants.RobotConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class ElevatorSimulation extends MotorSimulation {
@@ -13,9 +13,10 @@ public class ElevatorSimulation extends MotorSimulation {
         this.diameterMeters = drumRadiusMeters + drumRadiusMeters;
         elevatorSimulation = new ElevatorSim(motor, gearRatio, mass, drumRadiusMeters, retractedArmLengthMeters, maximumAngleRadians, simulateGravity, retractedArmLengthMeters);
     }
+
     @Override
-    double calculateFeedforward(double ks, double kg, double kv, double ka, double targetVelocity, double targetPosition) {
-        return ks * Math.signum(targetVelocity) + kg + kv * targetVelocity + ka * 0;
+    double calculateFeedforward(MotorSimulationConfiguration.FeedForwardConfigs feedForwardConfiguration, double targetPositionRadians, double targetVelocity) {
+        return feedForwardConfiguration.kS * Math.signum(targetVelocity) + feedForwardConfiguration.kG + feedForwardConfiguration.kV * targetVelocity + feedForwardConfiguration.kA * 0;
     }
 
     @Override
@@ -36,5 +37,10 @@ public class ElevatorSimulation extends MotorSimulation {
     @Override
     void setInputVoltage(double voltage) {
         elevatorSimulation.setInputVoltage(voltage);
+    }
+
+    @Override
+    void updateMotor() {
+        elevatorSimulation.update(RobotConstants.PERIODIC_TIME_SECONDS);
     }
 }
