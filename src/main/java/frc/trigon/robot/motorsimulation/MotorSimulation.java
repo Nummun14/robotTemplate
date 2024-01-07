@@ -108,6 +108,7 @@ public abstract class MotorSimulation {
             motorSimulation.updateMotor();
         }
     }
+
     /**
      * Calculates the feedforward
      *
@@ -125,6 +126,6 @@ public abstract class MotorSimulation {
     abstract double getCurrent();
 
     abstract void setInputVoltage(double voltage);
-    
+
     abstract void updateMotor();
 }
