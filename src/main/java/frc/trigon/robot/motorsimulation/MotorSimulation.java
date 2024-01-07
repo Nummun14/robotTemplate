@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A class that simulates a motor and its PID and feedforward.
+ * A wrapper class for the WPIlib default simulation classes, that'll act similarly to how the TalonFX motor controller works.
  */
 public abstract class MotorSimulation {
     private static final List<MotorSimulation> REGISTERED_SIMULATIONS = new ArrayList<>();
@@ -29,9 +29,9 @@ public abstract class MotorSimulation {
 
     private PositionVoltage positionVoltageRequest = null;
     private MotionMagicVoltage motionMagicRequest = null;
-    private PIDController pidController;
-    private ProfiledPIDController profiledPIDController;
     private MotorSimulationConfiguration config = new MotorSimulationConfiguration();
+    private PIDController pidController = new PIDController(config.pidConfigs.kP, config.pidConfigs.kI, config.pidConfigs.kD);
+    private ProfiledPIDController profiledPIDController = new ProfiledPIDController(config.pidConfigs.kP, config.pidConfigs.kI, config.pidConfigs.kD, new TrapezoidProfile.Constraints(config.motionMagicConfigs.maxVelocity, config.motionMagicConfigs.maxAcceleration));
     private double voltage = 0;
 
     protected MotorSimulation() {
@@ -39,15 +39,9 @@ public abstract class MotorSimulation {
     }
 
     private static void updateRegisteredSimulations() {
-        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS) {
-            motorSimulation.updateMotor();
-            if (motorSimulation.motionMagicRequest != null)
-                motorSimulation.setControl(motorSimulation.motionMagicRequest);
-            else if (motorSimulation.positionVoltageRequest != null)
-                motorSimulation.setControl(motorSimulation.positionVoltageRequest);
-        }
+        for (MotorSimulation motorSimulation : REGISTERED_SIMULATIONS)
+            motorSimulation.updateSimulation(motorSimulation);
     }
-
 
     public void applyConfiguration(MotorSimulationConfiguration config) {
         profiledPIDController = new ProfiledPIDController(config.pidConfigs.kP, config.pidConfigs.kI, config.pidConfigs.kD, new TrapezoidProfile.Constraints(config.motionMagicConfigs.maxVelocity, config.motionMagicConfigs.maxAcceleration));
@@ -95,6 +89,14 @@ public abstract class MotorSimulation {
 
     public double getVelocity() {
         return getVelocityRevolutionsPerSecond() * config.conversionFactor;
+    }
+
+    private void updateSimulation(MotorSimulation motorSimulation) {
+        motorSimulation.updateMotor();
+        if (motorSimulation.motionMagicRequest != null)
+            motorSimulation.setControl(motorSimulation.motionMagicRequest);
+        else if (motorSimulation.positionVoltageRequest != null)
+            motorSimulation.setControl(motorSimulation.positionVoltageRequest);
     }
 
     private double calculateMotionMagicOutput(MotionMagicVoltage motionMagicRequest) {
