@@ -12,10 +12,10 @@ public class SpeedMechanism2d {
     private final Mechanism2d mechanism;
     private final MechanismLigament2d ligament;
 
-    public SpeedMechanism2d(String key , double maxVelocity) {
+    public SpeedMechanism2d(String key, double maxVelocity) {
         this.key = key;
-        this.mechanism = new Mechanism2d(maxVelocity, maxVelocity);
-        MechanismRoot2d root = mechanism.getRoot(key, 0.5 * maxVelocity, 0.5 * maxVelocity);
+        this.mechanism = new Mechanism2d(2 * maxVelocity, 2 * maxVelocity);
+        MechanismRoot2d root = mechanism.getRoot(key, maxVelocity, maxVelocity);
         this.ligament = root.append(new MechanismLigament2d(key, maxVelocity, 0, 10, new Color8Bit(Color.kBlue)));
     }
 
@@ -28,8 +28,8 @@ public class SpeedMechanism2d {
     private Color8Bit setColor(double velocity) {
         if (velocity > 0)
             return new Color8Bit(Color.kGreen);
-         else if (velocity < 0)
+        else if (velocity < 0)
             return new Color8Bit(Color.kRed);
-         return new Color8Bit(Color.kBlue);
+        return new Color8Bit(Color.kBlue);
     }
 }
