@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import frc.trigon.robot.constants.RobotConstants;
+import frc.trigon.robot.utilities.Commands;
 import frc.trigon.robot.utilities.Conversions;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public abstract class MotorSimulation {
     private static final List<MotorSimulation> REGISTERED_SIMULATIONS = new ArrayList<>();
 
     static {
-        new Notifier(MotorSimulation::updateRegisteredSimulations).startPeriodic(RobotConstants.PERIODIC_TIME_SECONDS);
+        Commands.getDelayedCommand(2, () -> new Notifier(MotorSimulation::updateRegisteredSimulations).startPeriodic(RobotConstants.PERIODIC_TIME_SECONDS));
     }
 
     private PositionVoltage positionVoltageRequest = null;
