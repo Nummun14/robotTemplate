@@ -31,6 +31,7 @@ public class SpeedMechanism2d {
             zeroTopAngle = 90,
             zeroBottomAngle = 270;
     private final double deadband = 0.001;
+    private double lastTargetVelocity = 0;
     public SpeedMechanism2d(String key, double maxDisplayableVelocity) {
         this.maxDisplayableVelocity = maxDisplayableVelocity;
         this.key = key;
@@ -39,12 +40,14 @@ public class SpeedMechanism2d {
     }
 
     public void setVelocity(double velocity) {
-        setVelocity(velocity, 0);
+        setVelocity(velocity, lastTargetVelocity);
     }
 
     public void setVelocity(double velocity, double targetVelocity) {
         createLigaments(velocity, targetVelocity);
         setTargetVelocity(targetVelocity);
+        setTargetVelocityArrowAngle(targetVelocity);
+        targetVelocityLigament.setLength(targetVelocity);
         setCurrentVelocityArrowAngle(velocity);
         currentVelocityLigament.setLength(velocity);
         setLigamentColor(velocity);
@@ -52,8 +55,7 @@ public class SpeedMechanism2d {
     }
 
     public void setTargetVelocity(double targetVelocity) {
-        setTargetVelocityArrowAngle(targetVelocity);
-        targetVelocityLigament.setLength(targetVelocity);
+        lastTargetVelocity = targetVelocity;
     }
 
     private void createLigaments(double currentVelocity, double targetVelocity) {
